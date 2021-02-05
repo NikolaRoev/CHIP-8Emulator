@@ -6,6 +6,17 @@
 
 //======================================================================================================================================================
 
+enum OpCode : uint8_t {
+	CLS			= 0x00E0,
+	RET			= 0x00EE,
+	JP_addr		= 0x1000,
+	CALL_addr	= 0x2000,
+	SE_Vx_byte	= 0x3000,
+	SNE_Vx_byte = 0x4000,
+	SE_Vx_Vy	= 0x5000,
+
+};
+
 class CHIP8 {
 private:
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -52,7 +63,40 @@ private:
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
 	//Opcodes:
 
-	//
+	void code_00E0();
+	void code_00EE();
+	void code_1nnn();
+	void code_2nnn();
+	void code_3xkk();
+	void code_4xkk();
+	void code_5xy0();
+	void code_6xkk();
+	void code_7xkk();
+	void code_8xy0();
+	void code_8xy1();
+	void code_8xy2();
+	void code_8xy3();
+	void code_8xy4();
+	void code_8xy5();
+	void code_8xy6();
+	void code_8xy7();
+	void code_8xyE();
+	void code_9xy0();
+	void code_Annn();
+	void code_Bnnn();
+	void code_Cxkk();
+	void code_Dxyn();
+	void code_Ex9E();
+	void code_ExA1();
+	void code_Fx07();
+	void code_Fx0A();
+	void code_Fx15();
+	void code_Fx18();
+	void code_Fx1E();
+	void code_Fx29();
+	void code_Fx33();
+	void code_Fx55();
+	void code_Fx65();
 
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
 
