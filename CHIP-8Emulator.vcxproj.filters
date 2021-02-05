@@ -30,8 +30,5 @@
     <ClInclude Include="src\CHIP8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Instructions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
