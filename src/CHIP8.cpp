@@ -5,15 +5,13 @@
 #include <Windows.h>
 
 #include <cstdint>
-
 #include <array>
 #include <unordered_map>
-
 #include <fstream>
 #include <ios>
-
 #include <random>
-
+#include <chrono>
+#include <thread>
 #include <iostream>
 
 //======================================================================================================================================================
@@ -238,40 +236,56 @@ void CHIP8::code_Dxyn() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Ex9E() {
-	int key_code;
+	int key_code = 0;
 	switch (registers[memory[program_counter] & 0b0000'1111]) {
 		case 0x0ui8:
 			key_code = '0';
+			break;
 		case 0x1ui8:
 			key_code = '1';
+			break;
 		case 0x2ui8:
 			key_code = '2';
+			break;
 		case 0x3ui8:
 			key_code = '3';
+			break;
 		case 0x4ui8:
 			key_code = '4';
+			break;
 		case 0x5ui8:
 			key_code = '5';
+			break;
 		case 0x6ui8:
 			key_code = '6';
+			break;
 		case 0x7ui8:
 			key_code = '7';
+			break;
 		case 0x8ui8:
 			key_code = '8';
+			break;
 		case 0x9ui8:
 			key_code = '9';
+			break;
 		case 0xAui8:
 			key_code = 'A';
+			break;
 		case 0xBui8:
 			key_code = 'B';
+			break;
 		case 0xCui8:
 			key_code = 'C';
+			break;
 		case 0xDui8:
 			key_code = 'D';
+			break;
 		case 0xEui8:
 			key_code = 'E';
+			break;
 		case 0xFui8:
 			key_code = 'F';
+			break;
 	}
 
 
@@ -286,41 +300,58 @@ void CHIP8::code_Ex9E() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_ExA1() {
-	int key_code;
+	int key_code = 0;
 	switch (registers[memory[program_counter] & 0b0000'1111]) {
-	case 0x0ui8:
-		key_code = '0';
-	case 0x1ui8:
-		key_code = '1';
-	case 0x2ui8:
-		key_code = '2';
-	case 0x3ui8:
-		key_code = '3';
-	case 0x4ui8:
-		key_code = '4';
-	case 0x5ui8:
-		key_code = '5';
-	case 0x6ui8:
-		key_code = '6';
-	case 0x7ui8:
-		key_code = '7';
-	case 0x8ui8:
-		key_code = '8';
-	case 0x9ui8:
-		key_code = '9';
-	case 0xAui8:
-		key_code = 'A';
-	case 0xBui8:
-		key_code = 'B';
-	case 0xCui8:
-		key_code = 'C';
-	case 0xDui8:
-		key_code = 'D';
-	case 0xEui8:
-		key_code = 'E';
-	case 0xFui8:
-		key_code = 'F';
+		case 0x0ui8:
+			key_code = '0';
+			break;
+		case 0x1ui8:
+			key_code = '1';
+			break;
+		case 0x2ui8:
+			key_code = '2';
+			break;
+		case 0x3ui8:
+			key_code = '3';
+			break;
+		case 0x4ui8:
+			key_code = '4';
+			break;
+		case 0x5ui8:
+			key_code = '5';
+			break;
+		case 0x6ui8:
+			key_code = '6';
+			break;
+		case 0x7ui8:
+			key_code = '7';
+			break;
+		case 0x8ui8:
+			key_code = '8';
+			break;
+		case 0x9ui8:
+			key_code = '9';
+			break;
+		case 0xAui8:
+			key_code = 'A';
+			break;
+		case 0xBui8:
+			key_code = 'B';
+			break;
+		case 0xCui8:
+			key_code = 'C';
+			break;
+		case 0xDui8:
+			key_code = 'D';
+			break;
+		case 0xEui8:
+			key_code = 'E';
+			break;
+		case 0xFui8:
+			key_code = 'F';
+			break;
 	}
+
 
 
 	//SHORT is 16 bits.
@@ -418,14 +449,53 @@ bool CHIP8::load_memory(const char* file_name) {
 void CHIP8::execute() {
 	bool running = true;
 
+	//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	std::thread delay_thread(
+		[&delay_register = delay_register, &running]() {
+			while (running) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(17));
+
+				if (delay_register > 0) {
+					delay_register--;
+				}
+			}
+		}
+	);
+
+	std::thread sound_thread(
+		[&sound_register = sound_register, &running]() {
+			while (running) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(17));
+
+				if (sound_register > 0) {
+					sound_register--;
+				}
+			}
+		}
+	);
+
+	//------------------------------------------------------------------------------------------------------------------------------------------------------
+
 	while (running) {
-		//Get the first four bits.
-		switch (memory[program_counter] >> 4) {
-			case 0x0:
-				//TO DO:
-				break;
+		//Clock delay:
+		std::this_thread::sleep_for(std::chrono::milliseconds(2));
+
+
+		uint16_t instruction = (static_cast<uint16_t>(memory[program_counter]) << 8) & memory[static_cast<uint64_t>(program_counter) + 1];
+
+		if ((instruction & Instructions::CLS) == Instructions::CLS) {
+			code_00E0();
+		}
+		else {
+			running = false;
 		}
 	}
+
+	//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	delay_thread.join();
+	sound_thread.join();
 }
 
 //======================================================================================================================================================
