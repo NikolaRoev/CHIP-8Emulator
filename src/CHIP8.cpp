@@ -1,5 +1,7 @@
 #include "CHIP8.h"
 
+#include "Instructions.h"
+
 #include <Windows.h>
 
 #include <cstdint>
