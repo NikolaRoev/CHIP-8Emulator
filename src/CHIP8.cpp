@@ -25,6 +25,8 @@ void CHIP8::code_00E0() {
 void CHIP8::code_00EE() {
 	program_counter = stack[static_cast<uint64_t>(stack_pointer) - 1];
 	stack_pointer -= 1;
+
+	program_counter += 2;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------

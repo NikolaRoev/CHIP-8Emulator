@@ -28,24 +28,7 @@ private:
 	uint16_t program_counter{512};
 	uint8_t stack_pointer{};
 
-	std::unordered_map<uint8_t, uint8_t> registers{
-		{ 0x0ui8, 0ui8 },		//Register V0.
-		{ 0x1ui8, 0ui8 },		//Register V1.
-		{ 0x2ui8, 0ui8 },		//Register V2.
-		{ 0x3ui8, 0ui8 },		//Register V3.
-		{ 0x4ui8, 0ui8 },		//Register V4.
-		{ 0x5ui8, 0ui8 },		//Register V5.
-		{ 0x6ui8, 0ui8 },		//Register V6.
-		{ 0x7ui8, 0ui8 },		//Register V7.
-		{ 0x8ui8, 0ui8 },		//Register V8.
-		{ 0x9ui8, 0ui8 },		//Register V9.
-		{ 0xAui8, 0ui8 },		//Register VA.
-		{ 0xBui8, 0ui8 },		//Register VB.
-		{ 0xCui8, 0ui8 },		//Register VC.
-		{ 0xDui8, 0ui8 },		//Register VD.
-		{ 0xEui8, 0ui8 },		//Register VE.
-		{ 0xFui8, 0ui8 }		//Register VF.
-	};
+	std::array<uint8_t, 16> registers{};
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
