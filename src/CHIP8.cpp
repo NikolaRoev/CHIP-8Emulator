@@ -227,18 +227,53 @@ void CHIP8::code_Cxkk() {
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void CHIP8::code_Dxyn() {
+void CHIP8::code_Dxyn(sf::RenderWindow& window) {
 	uint8_t x = memory[program_counter] & 0b0000'1111;
 	uint8_t y = memory[static_cast<uint64_t>(program_counter) + 1] >> 4;
 	uint8_t n = memory[static_cast<uint64_t>(program_counter) + 1] & 0b0000'1111;
 
-	//TO DO: Put sprite on screen here.
+	
+	for (uint8_t j = 0; j < n; ++j) {
+		uint8_t byte_to_draw = memory[static_cast<uint64_t>(address_register) + j];
+
+		for (uint8_t i = 0; i < 8; ++i) {
+			uint8_t bit_to_draw = (byte_to_draw >> (7 - i)) & 1;
+
+			if (bit_to_draw != 0 && screen[(j + y) % 32][(i + x) % 64] != 0) {
+				registers[0xFui8] = 1;
+			}
+			else {
+				registers[0xFui8] = 0;
+			}
+
+			screen[(j + y) % 32][(i + x) % 64] ^= static_cast<bool>(bit_to_draw);
+		}
+	}
 
 	program_counter += 2;
 
-	//TO DO: Render function goes here.
 
-	std::cout << "drw call";
+	//Rendering:
+	sf::RectangleShape set_pixel;
+	set_pixel.setSize({ 10, 10 });
+	set_pixel.setFillColor(sf::Color::Blue);
+
+	sf::RectangleShape unset_pixel;
+	unset_pixel.setSize({ 10, 10 });
+	unset_pixel.setFillColor(sf::Color::Yellow);
+
+	for (int screen_y = 0; screen_y < screen.size(); ++screen_y) {
+		for (int screen_x = 0; screen_x < screen[0].size(); ++screen_x) {
+			if (screen[screen_y][screen_x]) {
+				set_pixel.setPosition(screen_x*10, screen_y*10);
+				window.draw(set_pixel);
+			}
+			else {
+				unset_pixel.setPosition(screen_x * 10, screen_y * 10);
+				window.draw(unset_pixel);
+			}
+		}
+	}
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -557,6 +592,9 @@ bool CHIP8::load_memory(const char* file_name) {
 void CHIP8::execute() {
 	bool running = true;
 
+	sf::RenderWindow window;
+	window.create({ 640, 320 }, "CHIP-8 Emulator");
+
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	std::thread delay_thread(
@@ -578,6 +616,7 @@ void CHIP8::execute() {
 
 				if (sound_register > 0) {
 					sound_register--;
+					std::cout << "Sound.\n";
 				}
 			}
 		}
@@ -653,7 +692,7 @@ void CHIP8::execute() {
 		case 0xCui8:
 			code_Cxkk(); break;
 		case 0xDui8:
-			code_Dxyn(); break;
+			code_Dxyn(window); break;
 		case 0xEui8:
 			if ((instruction & 0b0000'0000'1111'1111) == 0x9E) {
 				code_Ex9E();
@@ -696,6 +735,15 @@ void CHIP8::execute() {
 		}
 
 		//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			// Request for closing the window
+			if (event.type == sf::Event::Closed)
+				window.close();
+		}
+
+		window.display();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
