@@ -25,6 +25,7 @@
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include=".gitattributes" />
+    <None Include="assets\octojam1title.ch8" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CHIP8.h">
