@@ -1,3 +1,3 @@
 # CHIP-8Emulator
 
-![Emulator demo.](https://github.com/NikolaRoev/CHIP-8Emulator/demo.png)
+![Emulator demo.](https://github.com/NikolaRoev/CHIP-8Emulator/blob/master/demo.png)
