@@ -238,6 +238,7 @@ void CHIP8::code_Dxyn() {
 	uint8_t y = registers[memory[static_cast<uint64_t>(program_counter) + 1] >> 4];
 	uint8_t n = memory[static_cast<uint64_t>(program_counter) + 1] & 0b0000'1111;
 
+	uint8_t collision = 0;
 	
 	for (uint8_t j = 0; j < n; ++j) {
 		uint8_t byte_to_draw = memory[static_cast<uint64_t>(address_register) + j];
@@ -246,15 +247,14 @@ void CHIP8::code_Dxyn() {
 			uint8_t bit_to_draw = (byte_to_draw >> (7 - i)) & 1;
 
 			if (bit_to_draw != 0 && screen[(j + y) % 32][(i + x) % 64] != 0) {
-				registers[0xFui8] = 1;
-			}
-			else {
-				registers[0xFui8] = 0;
+				collision = 1;
 			}
 
 			screen[(j + y) % 32][(i + x) % 64] ^= static_cast<bool>(bit_to_draw);
 		}
 	}
+
+	registers[0xFui8] = collision;
 
 	program_counter += 2;
 
@@ -271,23 +271,21 @@ void CHIP8::code_Dxyn() {
 	for (int screen_y = 0; screen_y < screen.size(); ++screen_y) {
 		for (int screen_x = 0; screen_x < screen[0].size(); ++screen_x) {
 			if (screen[screen_y][screen_x]) {
-				set_pixel.setPosition(screen_x*10, screen_y*10);
+				set_pixel.setPosition(static_cast<float>(screen_x * 10), static_cast<float>(screen_y * 10));
 				window.draw(set_pixel);
 			}
 			else {
-				unset_pixel.setPosition(screen_x * 10, screen_y * 10);
+				unset_pixel.setPosition(static_cast<float>(screen_x * 10), static_cast<float>(screen_y * 10));
 				window.draw(unset_pixel);
 			}
 		}
 	}
-
-	//TO DO: Fix flipping and collision.
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Ex9E() {
-	sf::Keyboard::Key key{};
+	sf::Keyboard::Key key{ sf::Keyboard::Unknown };
 	switch (registers[memory[program_counter] & 0b0000'1111]) {
 		case 0x0ui8:
 			key = sf::Keyboard::Num0;
@@ -350,7 +348,7 @@ void CHIP8::code_Ex9E() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_ExA1() {
-	sf::Keyboard::Key key{};
+	sf::Keyboard::Key key{ sf::Keyboard::Unknown };
 	switch (registers[memory[program_counter] & 0b0000'1111]) {
 		case 0x0ui8:
 			key = sf::Keyboard::Num0;
@@ -730,6 +728,7 @@ void CHIP8::execute() {
 
 		if (event.type == sf::Event::Closed) {
 			window.close();
+			running = false;
 		}
 
 		window.display();
