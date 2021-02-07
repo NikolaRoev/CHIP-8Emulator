@@ -1,16 +1,20 @@
 #include "CHIP8.h"
 
-#include <Windows.h>
-
 #include <cstdint>
+
 #include <array>
-#include <unordered_map>
+
 #include <fstream>
 #include <ios>
+#include <iostream>
+
 #include <random>
 #include <chrono>
 #include <thread>
-#include <iostream>
+
+
+#include "SFML/Window.hpp"
+#include "SFML/Graphics.hpp"
 
 //======================================================================================================================================================
 
@@ -229,9 +233,9 @@ void CHIP8::code_Cxkk() {
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void CHIP8::code_Dxyn(sf::RenderWindow& window) {
-	uint8_t x = memory[program_counter] & 0b0000'1111;
-	uint8_t y = memory[static_cast<uint64_t>(program_counter) + 1] >> 4;
+void CHIP8::code_Dxyn() {
+	uint8_t x = registers[memory[program_counter] & 0b0000'1111];
+	uint8_t y = registers[memory[static_cast<uint64_t>(program_counter) + 1] >> 4];
 	uint8_t n = memory[static_cast<uint64_t>(program_counter) + 1] & 0b0000'1111;
 
 	
@@ -276,66 +280,67 @@ void CHIP8::code_Dxyn(sf::RenderWindow& window) {
 			}
 		}
 	}
+
+	//TO DO: Fix flipping and collision.
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Ex9E() {
-	int key_code = 0;
+	sf::Keyboard::Key key{};
 	switch (registers[memory[program_counter] & 0b0000'1111]) {
 		case 0x0ui8:
-			key_code = '0';
+			key = sf::Keyboard::Num0;
 			break;
 		case 0x1ui8:
-			key_code = '1';
+			key = sf::Keyboard::Num1;
 			break;
 		case 0x2ui8:
-			key_code = '2';
+			key = sf::Keyboard::Num2;
 			break;
 		case 0x3ui8:
-			key_code = '3';
+			key = sf::Keyboard::Num3;
 			break;
 		case 0x4ui8:
-			key_code = '4';
+			key = sf::Keyboard::Num4;
 			break;
 		case 0x5ui8:
-			key_code = '5';
+			key = sf::Keyboard::Num5;
 			break;
 		case 0x6ui8:
-			key_code = '6';
+			key = sf::Keyboard::Num6;
 			break;
 		case 0x7ui8:
-			key_code = '7';
+			key = sf::Keyboard::Num7;
 			break;
 		case 0x8ui8:
-			key_code = '8';
+			key = sf::Keyboard::Num8;
 			break;
 		case 0x9ui8:
-			key_code = '9';
+			key = sf::Keyboard::Num9;
 			break;
 		case 0xAui8:
-			key_code = 'A';
+			key = sf::Keyboard::A;
 			break;
 		case 0xBui8:
-			key_code = 'B';
+			key = sf::Keyboard::B;
 			break;
 		case 0xCui8:
-			key_code = 'C';
+			key = sf::Keyboard::C;
 			break;
 		case 0xDui8:
-			key_code = 'D';
+			key = sf::Keyboard::D;
 			break;
 		case 0xEui8:
-			key_code = 'E';
+			key = sf::Keyboard::E;
 			break;
 		case 0xFui8:
-			key_code = 'F';
+			key = sf::Keyboard::F;
 			break;
 	}
 
 
-	//SHORT is 16 bits.
-	if (GetKeyState(key_code) & 0b1000'0000'0000'0000) {
+	if (sf::Keyboard::isKeyPressed(key)) {
 		program_counter += 2;
 	}
 
@@ -345,62 +350,60 @@ void CHIP8::code_Ex9E() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_ExA1() {
-	int key_code = 0;
+	sf::Keyboard::Key key{};
 	switch (registers[memory[program_counter] & 0b0000'1111]) {
 		case 0x0ui8:
-			key_code = '0';
+			key = sf::Keyboard::Num0;
 			break;
 		case 0x1ui8:
-			key_code = '1';
+			key = sf::Keyboard::Num1;
 			break;
 		case 0x2ui8:
-			key_code = '2';
+			key = sf::Keyboard::Num2;
 			break;
 		case 0x3ui8:
-			key_code = '3';
+			key = sf::Keyboard::Num3;
 			break;
 		case 0x4ui8:
-			key_code = '4';
+			key = sf::Keyboard::Num4;
 			break;
 		case 0x5ui8:
-			key_code = '5';
+			key = sf::Keyboard::Num5;
 			break;
 		case 0x6ui8:
-			key_code = '6';
+			key = sf::Keyboard::Num6;
 			break;
 		case 0x7ui8:
-			key_code = '7';
+			key = sf::Keyboard::Num7;
 			break;
 		case 0x8ui8:
-			key_code = '8';
+			key = sf::Keyboard::Num8;
 			break;
 		case 0x9ui8:
-			key_code = '9';
+			key = sf::Keyboard::Num9;
 			break;
 		case 0xAui8:
-			key_code = 'A';
+			key = sf::Keyboard::A;
 			break;
 		case 0xBui8:
-			key_code = 'B';
+			key = sf::Keyboard::B;
 			break;
 		case 0xCui8:
-			key_code = 'C';
+			key = sf::Keyboard::C;
 			break;
 		case 0xDui8:
-			key_code = 'D';
+			key = sf::Keyboard::D;
 			break;
 		case 0xEui8:
-			key_code = 'E';
+			key = sf::Keyboard::E;
 			break;
 		case 0xFui8:
-			key_code = 'F';
+			key = sf::Keyboard::F;
 			break;
 	}
 
 
-
-	//SHORT is 16 bits.
-	if (!(GetKeyState(key_code) & 0b1000'0000'0000'0000)) {
+	if (!sf::Keyboard::isKeyPressed(key)) {
 		program_counter += 2;
 	}
 
@@ -418,72 +421,58 @@ void CHIP8::code_Fx07() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx0A() {
-	while (true) {
-		if ((GetKeyState('0') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x0ui8;
-			break;
-		}
-		else if ((GetKeyState('1') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x1ui8;
-			break;
-		}
-		else if ((GetKeyState('2') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x2ui8;
-			break;
-		}
-		else if ((GetKeyState('3') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x3ui8;
-			break;
-		}
-		else if ((GetKeyState('4') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x4ui8;
-			break;
-		}
-		else if ((GetKeyState('5') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x5ui8;
-			break;
-		}
-		else if ((GetKeyState('6') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x6ui8;
-			break;
-		}
-		else if ((GetKeyState('7') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x7ui8;
-			break;
-		}
-		else if ((GetKeyState('8') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x8ui8;
-			break;
-		}
-		else if ((GetKeyState('9') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0x9ui8;
-			break;
-		}
-		else if ((GetKeyState('A') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0xAui8;
-			break;
-		}
-		else if ((GetKeyState('B') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0xBui8;
-			break;
-		}
-		else if ((GetKeyState('C') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0xCui8;
-			break;
-		}
-		else if ((GetKeyState('D') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0xDui8;
-			break;
-		}
-		else if ((GetKeyState('E') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0xEui8;
-			break;
-		}
-		else if ((GetKeyState('F') & 0b1000'0000'0000'0000)) {
-			registers[memory[program_counter] & 0b0000'1111] = 0xFui8;
-			break;
-		}
+	window.waitEvent(event);
+
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x0ui8;
 	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x1ui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x2ui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x3ui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x4ui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x5ui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x6ui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x7ui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x8ui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num9)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0x9ui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0xAui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::B)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0xBui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0xCui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0xDui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0xEui8;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
+		registers[memory[program_counter] & 0b0000'1111] = 0xFui8;
+	}
+
 
 	program_counter += 2;
 }
@@ -594,7 +583,6 @@ bool CHIP8::load_memory(const char* file_name) {
 void CHIP8::execute() {
 	bool running = true;
 
-	sf::RenderWindow window;
 	window.create({ 640, 320 }, "CHIP-8 Emulator");
 
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -628,7 +616,7 @@ void CHIP8::execute() {
 
 	while (running) {
 		//Clock delay:
-		std::this_thread::sleep_for(std::chrono::milliseconds(2));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(2));
 
 		uint16_t instruction = (static_cast<uint16_t>(memory[program_counter]) << 8) | memory[static_cast<uint64_t>(program_counter) + 1];
 
@@ -694,7 +682,7 @@ void CHIP8::execute() {
 		case 0xCui8:
 			code_Cxkk(); break;
 		case 0xDui8:
-			code_Dxyn(window); break;
+			code_Dxyn(); break;
 		case 0xEui8:
 			if ((instruction & 0b0000'0000'1111'1111) == 0x9E) {
 				code_Ex9E();
@@ -738,11 +726,10 @@ void CHIP8::execute() {
 
 		//------------------------------------------------------------------------------------------------------------------------------------------------------
 
-		sf::Event event;
-		while (window.pollEvent(event)) {
-			// Request for closing the window
-			if (event.type == sf::Event::Closed)
-				window.close();
+		window.pollEvent(event);
+
+		if (event.type == sf::Event::Closed) {
+			window.close();
 		}
 
 		window.display();
