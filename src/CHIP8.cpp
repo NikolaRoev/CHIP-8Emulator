@@ -12,7 +12,6 @@
 #include <chrono>
 #include <thread>
 
-
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
 
@@ -542,12 +541,12 @@ void CHIP8::code_Fx65() {
 
 bool CHIP8::load_memory(const char* file_name) {
 	//Font data:
-	//0.				 //1.				  //2.				    //3.				  //4.				    //5.				  //6.				    //7.
-	memory[0] = 0xF0ui8; memory[5] = 0x20ui8; memory[10] = 0xF0ui8; memory[15] = 0xF0ui8; memory[20] = 0x90ui8; memory[25] = 0xF0ui8; memory[30] = 0xF0ui8; memory[35] = 0xF0ui8;
-	memory[1] = 0x90ui8; memory[6] = 0x60ui8; memory[11] = 0x10ui8; memory[16] = 0x10ui8; memory[21] = 0x90ui8; memory[26] = 0x80ui8; memory[31] = 0x80ui8; memory[36] = 0x10ui8;
-	memory[2] = 0x90ui8; memory[7] = 0x20ui8; memory[12] = 0xF0ui8; memory[17] = 0xF0ui8; memory[22] = 0xF0ui8; memory[27] = 0xF0ui8; memory[32] = 0xF0ui8; memory[37] = 0x20ui8;
-	memory[3] = 0x90ui8; memory[8] = 0x20ui8; memory[13] = 0x80ui8; memory[18] = 0x10ui8; memory[23] = 0x10ui8; memory[28] = 0x10ui8; memory[33] = 0x90ui8; memory[38] = 0x40ui8;
-	memory[4] = 0xF0ui8; memory[9] = 0x70ui8; memory[14] = 0xF0ui8; memory[19] = 0xF0ui8; memory[24] = 0x10ui8; memory[29] = 0xF0ui8; memory[34] = 0xF0ui8; memory[39] = 0x40ui8;
+	//0.				  //1.				    //2.				  //3.				    //4.				  //5.				    //6.				  //7.
+	memory[0] = 0xF0ui8;  memory[5] = 0x20ui8;  memory[10] = 0xF0ui8; memory[15] = 0xF0ui8; memory[20] = 0x90ui8; memory[25] = 0xF0ui8; memory[30] = 0xF0ui8; memory[35] = 0xF0ui8;
+	memory[1] = 0x90ui8;  memory[6] = 0x60ui8;  memory[11] = 0x10ui8; memory[16] = 0x10ui8; memory[21] = 0x90ui8; memory[26] = 0x80ui8; memory[31] = 0x80ui8; memory[36] = 0x10ui8;
+	memory[2] = 0x90ui8;  memory[7] = 0x20ui8;  memory[12] = 0xF0ui8; memory[17] = 0xF0ui8; memory[22] = 0xF0ui8; memory[27] = 0xF0ui8; memory[32] = 0xF0ui8; memory[37] = 0x20ui8;
+	memory[3] = 0x90ui8;  memory[8] = 0x20ui8;  memory[13] = 0x80ui8; memory[18] = 0x10ui8; memory[23] = 0x10ui8; memory[28] = 0x10ui8; memory[33] = 0x90ui8; memory[38] = 0x40ui8;
+	memory[4] = 0xF0ui8;  memory[9] = 0x70ui8;  memory[14] = 0xF0ui8; memory[19] = 0xF0ui8; memory[24] = 0x10ui8; memory[29] = 0xF0ui8; memory[34] = 0xF0ui8; memory[39] = 0x40ui8;
 
 	//8.				  //9.				    //A.				  //B.				    //C.				  //D.				    //E.				  //F.
 	memory[40] = 0xF0ui8; memory[45] = 0xF0ui8; memory[50] = 0xF0ui8; memory[55] = 0xE0ui8; memory[60] = 0xF0ui8; memory[65] = 0xE0ui8; memory[70] = 0xF0ui8; memory[75] = 0xF0ui8;
