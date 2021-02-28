@@ -29,7 +29,7 @@ private:
 	uint8_t delay_register{};
 	uint8_t sound_register{};
 
-	uint16_t program_counter{0x200};
+	uint16_t program_counter{ 0x200 };
 	uint8_t stack_pointer{};
 
 	std::array<uint8_t, 0x10> registers{};

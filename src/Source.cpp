@@ -2,6 +2,6 @@
 
 int main() {
 	CHIP8 test;
-	test.load_memory("assets/octojam1title.ch8");
+	test.load_memory("assets/Space Invaders [David Winter] (alt).ch8");
 	test.execute();
 }

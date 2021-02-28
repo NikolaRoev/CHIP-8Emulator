@@ -97,6 +97,7 @@
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
     <None Include="assets\octojam1title.ch8" />
+    <None Include="assets\Space Invaders [David Winter] (alt).ch8" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CHIP8.h" />
