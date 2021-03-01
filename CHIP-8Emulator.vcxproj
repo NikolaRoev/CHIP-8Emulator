@@ -91,16 +91,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\CHIP8.cpp" />
+    <ClCompile Include="src\Log\Log.cpp" />
     <ClCompile Include="src\Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
-    <None Include="assets\octojam1title.ch8" />
-    <None Include="assets\Space Invaders [David Winter] (alt).ch8" />
+    <None Include="roms\octojam1title.ch8" />
+    <None Include="roms\Space Invaders [David Winter] %28alt%29.ch8" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CHIP8.h" />
+    <ClInclude Include="src\Instruction.h" />
+    <ClInclude Include="src\Log\Log.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,7 @@
 #include "CHIP8.h"
 
+#include "Log/Log.h"
+
 #include <cstdint>
 
 #include <array>
@@ -18,6 +20,8 @@
 //======================================================================================================================================================
 
 void CHIP8::code_00E0() {
+	CHIP8_TRACE("Opcode: [00E0]");
+
 	screen = {};
 
 	program_counter += 2;
@@ -26,6 +30,8 @@ void CHIP8::code_00E0() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_00EE() {
+	CHIP8_TRACE("Opcode: [00EE]");
+
 	stack_pointer--;
 	program_counter = stack[stack_pointer];
 	
@@ -35,24 +41,28 @@ void CHIP8::code_00EE() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_1nnn() {
-	uint16_t hold = memory[program_counter] & 0x0F;
-	program_counter = (hold << 8) | memory[static_cast<uint64_t>(program_counter) + 1];
+	CHIP8_TRACE("Opcode: [1nnn]");
+
+	program_counter = instruction.address;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_2nnn() {
+	CHIP8_TRACE("Opcode: [2nnn]");
+
 	stack[stack_pointer] = program_counter;
 	stack_pointer++;
 
-	uint16_t hold = memory[program_counter] & 0x0F;
-	program_counter = (hold << 8) | memory[static_cast<uint64_t>(program_counter) + 1];
+	program_counter = instruction.address;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_3xkk() {
-	if (registers[memory[program_counter] & 0x0F] == memory[static_cast<uint64_t>(program_counter) + 1]) {
+	CHIP8_TRACE("Opcode: [3xkk]");
+
+	if (registers[instruction.second_nibble] == instruction.low_byte) {
 		program_counter += 2;
 	}
 
@@ -62,7 +72,9 @@ void CHIP8::code_3xkk() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_4xkk() {
-	if (registers[memory[program_counter] & 0x0F] != memory[static_cast<uint64_t>(program_counter) + 1]) {
+	CHIP8_TRACE("Opcode: [4xkk]");
+
+	if (registers[instruction.second_nibble] != instruction.low_byte) {
 		program_counter += 2;
 	}
 
@@ -72,7 +84,9 @@ void CHIP8::code_4xkk() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_5xy0() {
-	if (registers[memory[program_counter] & 0x0F] == registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)]) {
+	CHIP8_TRACE("Opcode: [5xy0]");
+
+	if (registers[instruction.second_nibble] == registers[instruction.third_nibble]) {
 		program_counter += 2;
 	}
 
@@ -82,7 +96,9 @@ void CHIP8::code_5xy0() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_6xkk() {
-	registers[memory[program_counter] & 0x0F] = memory[static_cast<uint64_t>(program_counter) + 1];
+	CHIP8_TRACE("Opcode: [6xkk]");
+
+	registers[instruction.second_nibble] = instruction.low_byte;
 	
 	program_counter += 2;
 }
@@ -90,7 +106,9 @@ void CHIP8::code_6xkk() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_7xkk() {
-	registers[memory[program_counter] & 0x0F] += memory[static_cast<uint64_t>(program_counter) + 1];
+	CHIP8_TRACE("Opcode: [7xkk]");
+
+	registers[instruction.second_nibble] += static_cast<uint8_t>(instruction.low_byte);
 
 	program_counter += 2;
 }
@@ -98,7 +116,9 @@ void CHIP8::code_7xkk() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_8xy0() {
-	registers[memory[program_counter] & 0x0F] = registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)];
+	CHIP8_TRACE("Opcode: [8xy0]");
+
+	registers[instruction.second_nibble] = registers[instruction.third_nibble];
 
 	program_counter += 2;
 }
@@ -106,7 +126,9 @@ void CHIP8::code_8xy0() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_8xy1() {
-	registers[memory[program_counter] & 0x0F] |= registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)];
+	CHIP8_TRACE("Opcode: [8xy1]");
+
+	registers[instruction.second_nibble] |= registers[instruction.third_nibble];
 
 	program_counter += 2;
 }
@@ -114,7 +136,9 @@ void CHIP8::code_8xy1() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_8xy2() {
-	registers[memory[program_counter] & 0x0F] &= registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)];
+	CHIP8_TRACE("Opcode: [8xy2]");
+
+	registers[instruction.second_nibble] &= registers[instruction.third_nibble];
 
 	program_counter += 2;
 }
@@ -122,7 +146,9 @@ void CHIP8::code_8xy2() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_8xy3() {
-	registers[memory[program_counter] & 0x0F] ^= registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)];
+	CHIP8_TRACE("Opcode: [8xy3]");
+
+	registers[instruction.second_nibble] ^= registers[instruction.third_nibble];
 
 	program_counter += 2;
 }
@@ -130,8 +156,10 @@ void CHIP8::code_8xy3() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_8xy4() {
-	uint16_t temp_Vx = registers[memory[program_counter] & 0x0F];
-	uint16_t temp_Vy = registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)];
+	CHIP8_TRACE("Opcode: [8xy4]");
+
+	uint16_t temp_Vx = registers[instruction.second_nibble];
+	uint16_t temp_Vy = registers[instruction.third_nibble];
 
 	temp_Vx += temp_Vy;
 
@@ -139,7 +167,7 @@ void CHIP8::code_8xy4() {
 
 	temp_Vx &= 0xFF;
 
-	registers[memory[program_counter] & 0x0F] = static_cast<uint8_t>(temp_Vx);
+	registers[instruction.second_nibble] = static_cast<uint8_t>(temp_Vx);
 
 	program_counter += 2;
 }
@@ -147,14 +175,16 @@ void CHIP8::code_8xy4() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_8xy5() {
-	if (registers[memory[program_counter] & 0x0F] > registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)]) {
+	CHIP8_TRACE("Opcode: [8xy5]");
+
+	if (registers[instruction.second_nibble] > registers[instruction.third_nibble]) {
 		registers[0xF] = 1;
 	}
 	else {
 		registers[0xF] = 0;
 	}
 
-	registers[memory[program_counter] & 0x0F] -= registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)];
+	registers[instruction.second_nibble] -= registers[instruction.third_nibble];
 
 	program_counter += 2;
 }
@@ -162,9 +192,11 @@ void CHIP8::code_8xy5() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_8xy6() {
-	registers[0xF] = registers[memory[program_counter] & 0x0F] & 0x1;
+	CHIP8_TRACE("Opcode: [8xy6]");
 
-	registers[memory[program_counter] & 0x0F] >>= 1;
+	registers[0xF] = registers[instruction.second_nibble] & 0x01;
+
+	registers[instruction.second_nibble] >>= 1;
 
 	program_counter += 2;
 }
@@ -172,14 +204,16 @@ void CHIP8::code_8xy6() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_8xy7() {
-	if (registers[memory[program_counter] & 0x0F] < registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)]) {
-		registers[0xFui8] = 1;
+	CHIP8_TRACE("Opcode: [8xy7]");
+
+	if (registers[instruction.second_nibble] < registers[instruction.third_nibble]) {
+		registers[0x0F] = 1;
 	}
 	else {
-		registers[0xFui8] = 0;
+		registers[0x0F] = 0;
 	}
 
-	registers[memory[program_counter] & 0x0F] = registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)] - registers[memory[program_counter] & 0x0F];
+	registers[instruction.second_nibble] = registers[instruction.third_nibble] - registers[instruction.second_nibble];
 
 	program_counter += 2;
 }
@@ -187,9 +221,11 @@ void CHIP8::code_8xy7() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_8xyE() {
-	registers[0xF] = (registers[memory[program_counter] & 0x0F] & 0x80) == 0x80;
+	CHIP8_TRACE("Opcode: [8xyE]");
 
-	registers[memory[program_counter] & 0x0F] <<= 1;
+	registers[0xF] = (registers[instruction.second_nibble] & 0x80) == 0x80;
+
+	registers[instruction.second_nibble] <<= 1;
 
 	program_counter += 2;
 }
@@ -197,7 +233,9 @@ void CHIP8::code_8xyE() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_9xy0() {
-	if (registers[memory[program_counter] & 0x0F] != registers[static_cast<uint64_t>(memory[static_cast<uint64_t>(program_counter) + 1] >> 4)]) {
+	CHIP8_TRACE("Opcode: [9xy0]");
+
+	if (registers[instruction.second_nibble] != registers[instruction.third_nibble]) {
 		program_counter += 2;
 	}
 
@@ -207,8 +245,9 @@ void CHIP8::code_9xy0() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Annn() {
-	uint16_t hold = memory[program_counter] & 0x0F;
-	address_register = (hold << 8) | memory[static_cast<uint64_t>(program_counter) + 1];
+	CHIP8_TRACE("Opcode: [Annn]");
+
+	address_register = instruction.address;
 
 	program_counter += 2;
 }
@@ -216,14 +255,17 @@ void CHIP8::code_Annn() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Bnnn() {
-	uint16_t hold = memory[program_counter] & 0x0F;
-	program_counter = ((hold << 8) | memory[static_cast<uint64_t>(program_counter) + 1]) + registers[0x0];
+	CHIP8_TRACE("Opcode: [Bnnn]");
+
+	program_counter = instruction.address + registers[0x0];
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Cxkk() {
-	registers[memory[program_counter] & 0x0F] = static_cast<uint8_t>(rand() % 256) & memory[static_cast<uint64_t>(program_counter) + 1];
+	CHIP8_TRACE("Opcode: [Cxkk]");
+
+	registers[instruction.second_nibble] = static_cast<uint8_t>(rand() % 256) & instruction.low_byte;
 
 	program_counter += 2;
 }
@@ -231,9 +273,11 @@ void CHIP8::code_Cxkk() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Dxyn() {
-	uint8_t x = registers[memory[program_counter] & 0b0000'1111];
-	uint8_t y = registers[memory[static_cast<uint64_t>(program_counter) + 1] >> 4];
-	uint8_t n = memory[static_cast<uint64_t>(program_counter) + 1] & 0b0000'1111;
+	CHIP8_TRACE("Opcode: [Dxyn]");
+
+	uint8_t x = registers[instruction.second_nibble];
+	uint8_t y = registers[instruction.third_nibble];
+	uint8_t n = instruction.fourth_nibble;
 
 	uint8_t collision = 0;
 	
@@ -251,7 +295,7 @@ void CHIP8::code_Dxyn() {
 		}
 	}
 
-	registers[0xFui8] = collision;
+	registers[0xF] = collision;
 
 	program_counter += 2;
 
@@ -282,55 +326,57 @@ void CHIP8::code_Dxyn() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Ex9E() {
+	CHIP8_TRACE("Opcode: [Ex9E]");
+
 	sf::Keyboard::Key key{ sf::Keyboard::Key::Unknown };
 
-	switch (registers[memory[program_counter] & 0b0000'1111]) {
-		case 0x0ui8:
+	switch (registers[instruction.second_nibble]) {
+		case 0x00:
 			key = sf::Keyboard::Num0;
 			break;
-		case 0x1ui8:
+		case 0x01:
 			key = sf::Keyboard::Num1;
 			break;
-		case 0x2ui8:
+		case 0x02:
 			key = sf::Keyboard::Num2;
 			break;
-		case 0x3ui8:
+		case 0x03:
 			key = sf::Keyboard::Num3;
 			break;
-		case 0x4ui8:
+		case 0x04:
 			key = sf::Keyboard::Num4;
 			break;
-		case 0x5ui8:
+		case 0x05:
 			key = sf::Keyboard::Num5;
 			break;
-		case 0x6ui8:
+		case 0x06:
 			key = sf::Keyboard::Num6;
 			break;
-		case 0x7ui8:
+		case 0x07:
 			key = sf::Keyboard::Num7;
 			break;
-		case 0x8ui8:
+		case 0x08:
 			key = sf::Keyboard::Num8;
 			break;
-		case 0x9ui8:
+		case 0x09:
 			key = sf::Keyboard::Num9;
 			break;
-		case 0xAui8:
+		case 0x0A:
 			key = sf::Keyboard::A;
 			break;
-		case 0xBui8:
+		case 0x0B:
 			key = sf::Keyboard::B;
 			break;
-		case 0xCui8:
+		case 0x0C:
 			key = sf::Keyboard::C;
 			break;
-		case 0xDui8:
+		case 0x0D:
 			key = sf::Keyboard::D;
 			break;
-		case 0xEui8:
+		case 0x0E:
 			key = sf::Keyboard::E;
 			break;
-		case 0xFui8:
+		case 0x0F:
 			key = sf::Keyboard::F;
 			break;
 	}
@@ -346,55 +392,57 @@ void CHIP8::code_Ex9E() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_ExA1() {
+	CHIP8_TRACE("Opcode: [ExA1]");
+
 	sf::Keyboard::Key key{ sf::Keyboard::Key::Unknown };
 
-	switch (registers[memory[program_counter] & 0b0000'1111]) {
-		case 0x0ui8:
+	switch (registers[instruction.second_nibble]) {
+		case 0x00:
 			key = sf::Keyboard::Num0;
 			break;
-		case 0x1ui8:
+		case 0x01:
 			key = sf::Keyboard::Num1;
 			break;
-		case 0x2ui8:
+		case 0x02:
 			key = sf::Keyboard::Num2;
 			break;
-		case 0x3ui8:
+		case 0x03:
 			key = sf::Keyboard::Num3;
 			break;
-		case 0x4ui8:
+		case 0x04:
 			key = sf::Keyboard::Num4;
 			break;
-		case 0x5ui8:
+		case 0x05:
 			key = sf::Keyboard::Num5;
 			break;
-		case 0x6ui8:
+		case 0x06:
 			key = sf::Keyboard::Num6;
 			break;
-		case 0x7ui8:
+		case 0x07:
 			key = sf::Keyboard::Num7;
 			break;
-		case 0x8ui8:
+		case 0x08:
 			key = sf::Keyboard::Num8;
 			break;
-		case 0x9ui8:
+		case 0x09:
 			key = sf::Keyboard::Num9;
 			break;
-		case 0xAui8:
+		case 0x0A:
 			key = sf::Keyboard::A;
 			break;
-		case 0xBui8:
+		case 0x0B:
 			key = sf::Keyboard::B;
 			break;
-		case 0xCui8:
+		case 0x0C:
 			key = sf::Keyboard::C;
 			break;
-		case 0xDui8:
+		case 0x0D:
 			key = sf::Keyboard::D;
 			break;
-		case 0xEui8:
+		case 0x0E:
 			key = sf::Keyboard::E;
 			break;
-		case 0xFui8:
+		case 0x0F:
 			key = sf::Keyboard::F;
 			break;
 	}
@@ -410,7 +458,9 @@ void CHIP8::code_ExA1() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx07() {
-	registers[memory[program_counter] & 0x0F] = delay_register;
+	CHIP8_TRACE("Opcode: [Fx07]");
+
+	registers[instruction.second_nibble] = delay_register;
 
 	program_counter += 2;
 }
@@ -418,56 +468,58 @@ void CHIP8::code_Fx07() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx0A() {
+	CHIP8_TRACE("Opcode: [Fx0A]");
+
 	window.waitEvent(event);
 
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x0ui8;
+		registers[instruction.second_nibble] = 0x00;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x1ui8;
+		registers[instruction.second_nibble] = 0x01;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x2ui8;
+		registers[instruction.second_nibble] = 0x02;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x3ui8;
+		registers[instruction.second_nibble] = 0x03;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x4ui8;
+		registers[instruction.second_nibble] = 0x04;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x5ui8;
+		registers[instruction.second_nibble] = 0x05;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x6ui8;
+		registers[instruction.second_nibble] = 0x06;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x7ui8;
+		registers[instruction.second_nibble] = 0x07;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x8ui8;
+		registers[instruction.second_nibble] = 0x08;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num9)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0x9ui8;
+		registers[instruction.second_nibble] = 0x09;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0xAui8;
+		registers[instruction.second_nibble] = 0x0A;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::B)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0xBui8;
+		registers[instruction.second_nibble] = 0x0B;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0xCui8;
+		registers[instruction.second_nibble] = 0x0C;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0xDui8;
+		registers[instruction.second_nibble] = 0x0D;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0xEui8;
+		registers[instruction.second_nibble] = 0x0E;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
-		registers[memory[program_counter] & 0b0000'1111] = 0xFui8;
+		registers[instruction.second_nibble] = 0x0F;
 	}
 
 
@@ -477,7 +529,9 @@ void CHIP8::code_Fx0A() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx15() {
-	delay_register = registers[memory[program_counter] & 0b0000'1111];
+	CHIP8_TRACE("Opcode: [Fx15]");
+
+	delay_register = registers[instruction.second_nibble];
 
 	program_counter += 2;
 }
@@ -485,7 +539,9 @@ void CHIP8::code_Fx15() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx18() {
-	sound_register = registers[memory[program_counter] & 0b0000'1111];
+	CHIP8_TRACE("Opcode: [Fx18]");
+
+	sound_register = registers[instruction.second_nibble];
 
 	program_counter += 2;
 }
@@ -493,7 +549,9 @@ void CHIP8::code_Fx18() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx1E() {
-	address_register += registers[memory[program_counter] & 0b0000'1111];
+	CHIP8_TRACE("Opcode: [Fx1E]");
+
+	address_register += registers[instruction.second_nibble];
 
 	program_counter += 2;
 }
@@ -501,7 +559,9 @@ void CHIP8::code_Fx1E() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx29() {
-	address_register = (registers[memory[program_counter] & 0b0000'1111] * 5) + 0x50;
+	CHIP8_TRACE("Opcode: [Fx29]");
+
+	address_register = (registers[instruction.second_nibble] * 5) + 0x50;
 
 	program_counter += 2;
 }
@@ -509,9 +569,11 @@ void CHIP8::code_Fx29() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx33() {
-	memory[address_register] = registers[memory[program_counter] & 0b0000'1111] / 100;
-	memory[static_cast<uint64_t>(address_register) + 1] = (registers[memory[program_counter] & 0b0000'1111] % 100) / 10;
-	memory[static_cast<uint64_t>(address_register) + 2] = (registers[memory[program_counter] & 0b0000'1111] % 100) % 10;
+	CHIP8_TRACE("Opcode: [Fx33]");
+
+	memory[address_register] = registers[instruction.second_nibble] / 100;
+	memory[static_cast<uint64_t>(address_register) + 1] = (registers[instruction.second_nibble] % 100) / 10;
+	memory[static_cast<uint64_t>(address_register) + 2] = (registers[instruction.second_nibble] % 100) % 10;
 
 	program_counter += 2;
 }
@@ -519,7 +581,9 @@ void CHIP8::code_Fx33() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx55() {
-	for (uint8_t i = 0; i <= (memory[program_counter] & 0b0000'1111); ++i) {
+	CHIP8_TRACE("Opcode: [Fx55]");
+
+	for (uint8_t i = 0; i <= instruction.second_nibble; ++i) {
 		memory[static_cast<uint64_t>(address_register) + i] = registers[i];
 	}
 
@@ -529,7 +593,9 @@ void CHIP8::code_Fx55() {
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
 void CHIP8::code_Fx65() {
-	for (uint8_t i = 0; i <= (memory[program_counter] & 0b0000'1111); ++i) {
+	CHIP8_TRACE("Opcode: [Fx65]");
+
+	for (uint8_t i = 0; i <= instruction.second_nibble; ++i) {
 		registers[i] = memory[static_cast<uint64_t>(address_register) + i];
 	}
 
@@ -539,7 +605,116 @@ void CHIP8::code_Fx65() {
 //======================================================================================================================================================
 //======================================================================================================================================================
 
-bool CHIP8::load_memory(const char* file_name) {
+void CHIP8::execute() {
+	switch (instruction.first_nibble) {
+		case 0x0ui8:
+			if (instruction.low_byte == 0x00E0) {
+				code_00E0();
+			}
+			else if (instruction.low_byte == 0x00EE) {
+				code_00EE();
+			}
+			else {
+				CHIP8_ERROR("Illegal opcode: [{}].", (int)instruction.instruction);
+				return;
+			}
+			break;
+		case 0x1ui8:
+			code_1nnn(); break;
+		case 0x2ui8:
+			code_2nnn(); break;
+		case 0x3ui8:
+			code_3xkk(); break;
+		case 0x4ui8:
+			code_4xkk(); break;
+		case 0x5ui8:
+			code_5xy0(); break;
+		case 0x6ui8:
+			code_6xkk(); break;
+		case 0x7ui8:
+			code_7xkk(); break;
+		case 0x8ui8:
+			switch (instruction.fourth_nibble) {
+				case 0x0ui8:
+					code_8xy0(); break;
+				case 0x1ui8:
+					code_8xy1(); break;
+				case 0x2ui8:
+					code_8xy2(); break;
+				case 0x3ui8:
+					code_8xy3(); break;
+				case 0x4ui8:
+					code_8xy4(); break;
+				case 0x5ui8:
+					code_8xy5(); break;
+				case 0x6ui8:
+					code_8xy6(); break;
+				case 0x7ui8:
+					code_8xy7(); break;
+				case 0xEui8:
+					code_8xyE(); break;
+				default:
+					CHIP8_ERROR("Illegal opcode: [{}].", (int)instruction.instruction);
+					break;
+			}
+			break;
+		case 0x9ui8:
+			code_9xy0(); break;
+		case 0xAui8:
+			code_Annn(); break;
+		case 0xBui8:
+			code_Bnnn(); break;
+		case 0xCui8:
+			code_Cxkk(); break;
+		case 0xDui8:
+			code_Dxyn(); break;
+		case 0xEui8:
+			if ((instruction.low_byte) == 0x9E) {
+				code_Ex9E();
+			}
+			else if ((instruction.low_byte) == 0xA1) {
+				code_ExA1();
+			}
+			else {
+				CHIP8_ERROR("Illegal opcode: [{}].", (int)instruction.instruction);
+				return;
+			}
+			break;
+		case 0xFui8:
+			switch ((instruction.low_byte)) {
+				case 0x07ui8:
+					code_Fx07(); break;
+				case 0x0Aui8:
+					code_Fx0A(); break;
+				case 0x15ui8:
+					code_Fx15(); break;
+				case 0x18ui8:
+					code_Fx18(); break;
+				case 0x1Eui8:
+					code_Fx1E(); break;
+				case 0x29ui8:
+					code_Fx29(); break;
+				case 0x33ui8:
+					code_Fx33(); break;
+				case 0x55ui8:
+					code_Fx55(); break;
+				case 0x65ui8:
+					code_Fx65(); break;
+				default:
+					CHIP8_ERROR("Illegal opcode: [{}].", (int)instruction.instruction);
+					break;
+			}
+			break;
+		default:
+			CHIP8_ERROR("Illegal opcode: [{}].", (int)instruction.instruction);
+			break;
+	}
+}
+
+//======================================================================================================================================================
+//======================================================================================================================================================
+
+void CHIP8::load_memory(const char* file_name) {
 	//Font data:
 	//0.				   //1.				      //2.				     //3.				    //4.				   //5.				      //6.				     //7.
 	memory[80] = 0xF0ui8;  memory[85] = 0x20ui8;  memory[90] = 0xF0ui8;  memory[95] = 0xF0ui8;  memory[100] = 0x90ui8; memory[105] = 0xF0ui8; memory[110] = 0xF0ui8; memory[115] = 0xF0ui8;
@@ -568,25 +743,24 @@ bool CHIP8::load_memory(const char* file_name) {
 
 
 		file.close();
-		return true;
+
+		CHIP8_INFO("Loaded memory: [{}].", file_name);
 	}
 	else {
-		return false;
+		CHIP8_ERROR("Failed to load memory: [{}].", file_name);
 	}
 }
 
 //======================================================================================================================================================
 
-void CHIP8::execute() {
-	bool running = true;
-
+void CHIP8::run() {
 	window.create({ 640, 320 }, "CHIP-8 Emulator");
 
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	std::thread delay_thread(
-		[&delay_register = delay_register, &running]() {
-			while (running) {
+		[&delay_register = delay_register, &window = window]() {
+			while (window.isOpen()) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
 				if (delay_register > 0) {
@@ -597,8 +771,8 @@ void CHIP8::execute() {
 	);
 
 	std::thread sound_thread(
-		[&sound_register = sound_register, &running]() {
-			while (running) {
+		[&sound_register = sound_register, &window = window]() {
+			while (window.isOpen()) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
 				if (sound_register > 0) {
@@ -611,115 +785,15 @@ void CHIP8::execute() {
 
 	//------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	while (running) {
+	while (window.isOpen()) {
 		//Clock delay:
 		//std::this_thread::sleep_for(std::chrono::milliseconds(2));
 
-		uint16_t instruction = (memory[program_counter] << 8) | memory[static_cast<uint64_t>(program_counter) + 1];
+		instruction.instruction = (memory[program_counter] << 8) | memory[static_cast<uint64_t>(program_counter) + 1];
 
 		//------------------------------------------------------------------------------------------------------------------------------------------------------
 
-		switch (memory[program_counter] >> 4) {
-			case 0x0ui8:
-				if (instruction == 0x00E0) {
-					code_00E0();
-				}
-				else if (instruction == 0x00EE) {
-					code_00EE();
-				}
-				else {
-					running = false;
-				}
-				break;
-			case 0x1ui8:
-				code_1nnn(); break;
-			case 0x2ui8:
-				code_2nnn(); break;
-			case 0x3ui8:
-				code_3xkk(); break;
-			case 0x4ui8:
-				code_4xkk(); break;
-			case 0x5ui8:
-				code_5xy0(); break;
-			case 0x6ui8:
-				code_6xkk(); break;
-			case 0x7ui8:
-				code_7xkk(); break;
-			case 0x8ui8:
-				switch (instruction & 0b0000'0000'0000'1111) {
-					case 0x0ui8:
-						code_8xy0(); break;
-					case 0x1ui8:
-						code_8xy1(); break;
-					case 0x2ui8:
-						code_8xy2(); break;
-					case 0x3ui8:
-						code_8xy3(); break;
-					case 0x4ui8:
-						code_8xy4(); break;
-					case 0x5ui8:
-						code_8xy5(); break;
-					case 0x6ui8:
-						code_8xy6(); break;
-					case 0x7ui8:
-						code_8xy7(); break;
-					case 0xEui8:
-						code_8xyE(); break;
-					default:
-						running = false;
-						break;
-				}
-				break;
-			case 0x9ui8:
-				code_9xy0(); break;
-			case 0xAui8:
-				code_Annn(); break;
-			case 0xBui8:
-				code_Bnnn(); break;
-			case 0xCui8:
-				code_Cxkk(); break;
-			case 0xDui8:
-				code_Dxyn(); break;
-			case 0xEui8:
-				if ((instruction & 0b0000'0000'1111'1111) == 0x9E) {
-					code_Ex9E();
-				}
-				else if ((instruction & 0b0000'0000'1111'1111) == 0xA1) {
-					code_ExA1();
-				}
-				else {
-					running = false;
-				}
-				break;
-			case 0xFui8:
-				switch ((instruction & 0b0000'0000'1111'1111)) {
-					case 0x07ui8:
-						code_Fx07(); break;
-					case 0x0Aui8:
-						code_Fx0A(); break;
-					case 0x15ui8:
-						code_Fx15(); break;
-					case 0x18ui8:
-						code_Fx18(); break;
-					case 0x1Eui8:
-						code_Fx1E(); break;
-					case 0x29ui8:
-						code_Fx29(); break;
-					case 0x33ui8:
-						code_Fx33(); break;
-					case 0x55ui8:
-						code_Fx55(); break;
-					case 0x65ui8:
-						code_Fx65(); break;
-					default:
-						running = false;
-						break;
-				}
-				break;
-			default:
-				running = false;
-				break;
-		}
+		execute();
 
 		//------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -727,7 +801,7 @@ void CHIP8::execute() {
 
 		if (event.type == sf::Event::Closed) {
 			window.close();
-			running = false;
+			CHIP8_INFO("Window closed.");
 		}
 
 		window.display();

@@ -21,15 +21,24 @@
     <ClCompile Include="src\CHIP8.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Log\Log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include=".gitattributes" />
-    <None Include="assets\octojam1title.ch8" />
-    <None Include="assets\Space Invaders [David Winter] (alt).ch8" />
+    <None Include="roms\octojam1title.ch8" />
+    <None Include="roms\Space Invaders [David Winter] %28alt%29.ch8" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CHIP8.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Log\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Instruction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
